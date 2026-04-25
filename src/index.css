@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  margin: 0;
+  min-height: 100vh;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+
+@keyframes arcadePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 4px #0f172a,
+      0 0 0 8px #fbbf24,
+      0 0 24px rgba(251, 191, 36, 0.7),
+      0 0 48px rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      0 0 0 4px #0f172a,
+      0 0 0 8px #fcd34d,
+      0 0 36px rgba(251, 191, 36, 1),
+      0 0 72px rgba(239, 68, 68, 0.75);
+  }
+}
+
+@keyframes arcadeBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.35; }
+}
+
+@keyframes crtScan {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 8px; }
+}
+
+.arcade-btn {
+  animation: arcadePulse 1.8s ease-in-out infinite;
+}
+
+.arcade-blink {
+  animation: arcadeBlink 0.9s steps(1) infinite;
+}
+
+.crt-overlay {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  animation: crtScan 1.5s linear infinite;
+}
+
+@keyframes carOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes carReveal {
+  0%   { transform: scale(0) rotate(-15deg); opacity: 0; }
+  20%  { transform: scale(1.7) rotate(8deg); opacity: 1; }
+  40%  { transform: scale(1.1) rotate(-4deg); }
+  60%  { transform: scale(1.5) rotate(3deg); }
+  80%  { transform: scale(1.3) rotate(-1deg); }
+  100% { transform: scale(1.35) rotate(0); opacity: 1; }
+}
+
+@keyframes fireworkParticle {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--fx, 0), var(--fy, 0)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes fireworkTrail {
+  0% { transform: scale(0); opacity: 0; }
+  30% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+.car-overlay-fadein {
+  animation: carOverlayFadeIn 0.25s ease forwards;
+}
+
+.car-reveal-anim {
+  animation: carReveal 2.4s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+.firework-particle {
+  animation: fireworkParticle 1.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
