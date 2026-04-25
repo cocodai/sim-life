@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
 
+const ASSET_BASE = import.meta.env.BASE_URL || "/";
+const asset = (name) => `${ASSET_BASE}${name.replace(/^\/+/, "")}`;
+
 const STORAGE_KEY = "simlife.players.v1";
 
 function loadPlayers() {
@@ -62,10 +65,10 @@ const LEAVE_ENERGY_PER_DAY = WEEKEND_ENERGY / 2;
 const LEAVE_HAPPINESS_PER_DAY = WEEKEND_HAPPINESS / 2;
 
 const STATUS_TIERS = [
-  { id: "start", min: 0, image: "/start.png", title: "新 手 上 路" },
-  { id: "t30", min: 300_000, image: "/30.png", title: "小 有 積 蓄" },
-  { id: "t50", min: 500_000, image: "/50.png", title: "穩 定 小 資" },
-  { id: "t100", min: 1_000_000, image: "/100.png", title: "百 萬 俱 樂 部" },
+  { id: "start", min: 0, image: asset("start.png"), title: "新 手 上 路" },
+  { id: "t30", min: 300_000, image: asset("30.png"), title: "小 有 積 蓄" },
+  { id: "t50", min: 500_000, image: asset("50.png"), title: "穩 定 小 資" },
+  { id: "t100", min: 1_000_000, image: asset("100.png"), title: "百 萬 俱 樂 部" },
 ];
 
 function getTierIdx(savings) {
@@ -379,7 +382,7 @@ function LandingScreen({ onEnter }) {
   return (
     <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-black">
       <img
-        src="/cover.jpg"
+        src={asset("cover.jpg")}
         alt="雙北生存戰"
         className="absolute inset-0 w-full h-full object-contain"
       />
@@ -774,7 +777,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
 
     if (nextTierIdx === state.celebratedTierIdx && result.deficit) {
       triggerCelebration({
-        imageSrc: "/zero.png",
+        imageSrc: asset("zero.png"),
         title: "當 月 赤 字",
         emoji: "💸",
         withFireworks: false,
@@ -804,7 +807,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
   const buyCar = () => {
     if (state.hasCar) return;
     setState((s) => ({ ...s, hasCar: true, savings: s.savings - CAR_PRICE }));
-    triggerCelebration({ imageSrc: "/x6.jpg", title: "恭 喜 購 車", emoji: "🚗", multiply: true });
+    triggerCelebration({ imageSrc: asset("x6.jpg"), title: "恭 喜 購 車", emoji: "🚗", multiply: true });
   };
 
   const setLeaveDays = (days) => {
@@ -1033,7 +1036,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
               {hasCar && (
                 <div className="bg-white rounded-lg p-1.5 shrink-0 shadow-[0_0_18px_rgba(251,191,36,0.35)] border border-amber-300/60">
                   <img
-                    src="/x6.jpg"
+                    src={asset("x6.jpg")}
                     alt="My BMW X6"
                     className="block w-28 h-16 object-contain"
                     style={{ mixBlendMode: "multiply" }}
