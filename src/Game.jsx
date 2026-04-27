@@ -888,39 +888,42 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       {celebration && <CelebrationOverlay {...celebration} />}
-      <div className="flex justify-end mb-2">
-        <PlayerBadge playerName={playerName} onSwitchPlayer={onSwitchPlayer} />
-      </div>
-      <header className="flex items-center gap-4 mb-4">
-        <div className="shrink-0">
-          <div className="rounded-xl overflow-hidden border-2 border-amber-300/70 bg-slate-900 shadow-[0_0_20px_rgba(251,191,36,0.35)] w-20 md:w-24 aspect-[2/3]">
-            <img
-              key={currentTier.id}
-              src={currentTier.image}
-              alt={currentTier.title}
-              className="block w-full h-full object-cover"
-              style={{
-                transform: "scale(1.55)",
-                transformOrigin: "50% 48%",
-              }}
-            />
-          </div>
-          <div className="mt-1 text-center text-[10px] md:text-xs font-bold tracking-widest text-amber-200">
-            {currentTier.title}
-          </div>
-        </div>
-        <div className="flex-1 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-slate-400">Year {year}</div>
-            <h2 className="text-2xl font-bold text-white">第 {displayMonth} 個月 / 12</h2>
-          </div>
-          <MoneyPill savings={savings} />
-        </div>
-      </header>
 
-      <div className="flex flex-wrap gap-4 p-4 rounded-2xl bg-slate-800/70 border border-slate-700 mb-4">
-        <StatBar label="身心能量" value={energy} color="bg-sky-400" suffix="%" />
-        <StatBar label="快樂值" value={happiness} color="bg-pink-400" suffix="%" />
+      <div className="sticky top-0 z-30 -mx-4 px-4 pt-3 pb-3 mb-4 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 shadow-md shadow-black/40">
+        <div className="flex justify-end mb-2">
+          <PlayerBadge playerName={playerName} onSwitchPlayer={onSwitchPlayer} />
+        </div>
+        <header className="flex items-center gap-4 mb-3">
+          <div className="shrink-0">
+            <div className="rounded-xl overflow-hidden border-2 border-amber-300/70 bg-slate-900 shadow-[0_0_20px_rgba(251,191,36,0.35)] w-20 md:w-24 aspect-[2/3]">
+              <img
+                key={currentTier.id}
+                src={currentTier.image}
+                alt={currentTier.title}
+                className="block w-full h-full object-cover"
+                style={{
+                  transform: "scale(1.55)",
+                  transformOrigin: "50% 48%",
+                }}
+              />
+            </div>
+            <div className="mt-1 text-center text-[10px] md:text-xs font-bold tracking-widest text-amber-200">
+              {currentTier.title}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-widest text-slate-400">Year {year}</div>
+              <h2 className="text-2xl font-bold text-white">第 {displayMonth} 個月 / 12</h2>
+            </div>
+            <MoneyPill savings={savings} />
+          </div>
+        </header>
+
+        <div className="flex flex-wrap gap-4 p-3 rounded-2xl bg-slate-800/70 border border-slate-700">
+          <StatBar label="身心能量" value={energy} color="bg-sky-400" suffix="%" />
+          <StatBar label="快樂值" value={happiness} color="bg-pink-400" suffix="%" />
+        </div>
       </div>
 
       <section className="p-5 rounded-2xl bg-slate-900/80 border border-slate-700 mb-4 min-h-[220px]">
