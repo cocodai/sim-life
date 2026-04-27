@@ -62,7 +62,13 @@ const CAR_HAPPINESS_BONUS = 10;
 const WEEKEND_ENERGY = 10;
 const WEEKEND_HAPPINESS = 14;
 const LEAVE_ENERGY_PER_DAY = WEEKEND_ENERGY / 2;
-const LEAVE_HAPPINESS_PER_DAY = WEEKEND_HAPPINESS / 2;
+const LEAVE_HAPPINESS_PER_DAY = 5;
+
+const BASE_MONTHLY_ENERGY = 6;
+const BASE_MONTHLY_HAPPINESS = 6;
+const OVERTIME_HAPPINESS_PER_HOUR = 3;
+const DEFICIT_HAPPINESS_PENALTY = 12;
+const BROKE_HAPPINESS_PENALTY = 30;
 
 const STATUS_TIERS = [
   { id: "start", min: 0, image: asset("start.png"), title: "新 手 上 路" },
@@ -603,7 +609,7 @@ function simulateMonth(state, upcoming, year) {
 
   const overtimeHours = Math.max(0, workHours - 8);
   const overtimeEnergyPenalty = overtimeHours * 10;
-  const overtimeHappinessPenalty = overtimeHours >= 2 ? 5 : 0;
+  const overtimeHappinessPenalty = overtimeHours * OVERTIME_HAPPINESS_PER_HOUR;
 
   const breakdown = [];
 
@@ -677,16 +683,27 @@ function simulateMonth(state, upcoming, year) {
     happiness: event.happinessDelta ?? 0,
   });
 
-  const baseMonthlyEnergy = 6;
-  const energyDelta = breakdown.reduce((a, b) => a + (b.energy ?? 0), 0) + baseMonthlyEnergy;
-  const happinessDelta = breakdown.reduce((a, b) => a + (b.happiness ?? 0), 0) + 4;
   const monthlyNet = breakdown.reduce((a, b) => a + (b.money ?? 0), 0);
+  const deficit = monthlyNet < 0;
+
+  if (broke) {
+    breakdown.push({
+      label: "極簡模式生活壓力",
+      happiness: -BROKE_HAPPINESS_PENALTY,
+    });
+  } else if (deficit) {
+    breakdown.push({
+      label: "赤字壓力",
+      happiness: -DEFICIT_HAPPINESS_PENALTY,
+    });
+  }
+
+  const energyDelta = breakdown.reduce((a, b) => a + (b.energy ?? 0), 0) + BASE_MONTHLY_ENERGY;
+  const happinessDelta = breakdown.reduce((a, b) => a + (b.happiness ?? 0), 0) + BASE_MONTHLY_HAPPINESS;
 
   const newSavings = savings + monthlyNet;
   const newEnergy = clamp(energy + energyDelta);
-  let newHappiness = clamp(happiness + happinessDelta);
-  if (monthlyNet < 0) newHappiness = Math.round(newHappiness * 0.8);
-  if (broke) newHappiness = 0;
+  const newHappiness = clamp(happiness + happinessDelta);
 
   return {
     broke,
@@ -707,7 +724,7 @@ function simulateMonth(state, upcoming, year) {
     newHappiness,
     energyDelta,
     happinessDelta,
-    deficit: monthlyNet < 0,
+    deficit,
     breakdown,
   };
 }
@@ -946,7 +963,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
                     {lastResult.energyDelta >= 0 ? "+" : ""}{Math.round(lastResult.energyDelta)}⚡
                   </span>
                   <span className="px-1.5 py-0.5 rounded bg-pink-500/15 text-pink-300">
-                    {lastResult.happinessDelta >= 0 ? "+" : ""}{Math.round(lastResult.happinessDelta)}♥{lastResult.deficit && !lastResult.broke && " × 0.8(赤字)"}
+                    {lastResult.happinessDelta >= 0 ? "+" : ""}{Math.round(lastResult.happinessDelta)}♥
                   </span>
                 </span>
               </div>
