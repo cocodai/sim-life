@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const ASSET_BASE = import.meta.env.BASE_URL || "/";
 const asset = (name) => `${ASSET_BASE}${name.replace(/^\/+/, "")}`;
@@ -297,6 +297,19 @@ function CelebrationOverlay({
         </div>
       </div>
     </div>
+  );
+}
+
+function MusicControl({ muted, onToggle }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      title={muted ? "開啟背景音樂" : "靜音"}
+      className="fixed bottom-4 right-4 z-50 w-11 h-11 rounded-full bg-slate-800/90 hover:bg-slate-700 border border-amber-300/60 hover:border-amber-300 text-amber-200 text-xl flex items-center justify-center backdrop-blur shadow-lg shadow-black/40 transition"
+    >
+      {muted ? "🔇" : "🎵"}
+    </button>
   );
 }
 
@@ -1403,6 +1416,35 @@ export default function Game() {
   const [summary, setSummary] = useState(null);
   const [pastSummaries, setPastSummaries] = useState([]);
 
+  const audioRef = useRef(null);
+  const [muted, setMuted] = useState(() => {
+    try {
+      return localStorage.getItem("simlife.muted") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = 0.4;
+  }, []);
+
+  const toggleMute = () => {
+    setMuted((m) => {
+      const next = !m;
+      try {
+        localStorage.setItem("simlife.muted", next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      // 第一次點解除靜音時，順便嘗試開始播放（landing 階段未啟動的話）
+      if (!next && audioRef.current && audioRef.current.paused) {
+        audioRef.current.play().catch(() => {});
+      }
+      return next;
+    });
+  };
+
   const currentPlayer = players.find((p) => p.id === currentPlayerId) || null;
 
   const persistPlayers = (next) => {
@@ -1410,7 +1452,12 @@ export default function Game() {
     savePlayers(next);
   };
 
-  const enterGame = () => setPhase("playerSelect");
+  const enterGame = () => {
+    setPhase("playerSelect");
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play().catch(() => {});
+    }
+  };
 
   const selectPlayer = (id) => {
     const p = players.find((x) => x.id === id);
@@ -1504,6 +1551,14 @@ export default function Game() {
 
   return (
     <div className="min-h-screen">
+      <audio
+        ref={audioRef}
+        src={asset("The_Last_Train_Home.mp3")}
+        loop
+        preload="auto"
+        muted={muted}
+      />
+      <MusicControl muted={muted} onToggle={toggleMute} />
       {phase === "landing" && <LandingScreen onEnter={enterGame} />}
       {phase === "playerSelect" && (
         <PlayerSelectScreen
