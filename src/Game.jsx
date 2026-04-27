@@ -1420,6 +1420,7 @@ export default function Game() {
   const [pastSummaries, setPastSummaries] = useState([]);
 
   const audioRef = useRef(null);
+  const sfxStartRef = useRef(null);
   const [muted, setMuted] = useState(() => {
     try {
       return localStorage.getItem("simlife.muted") === "1";
@@ -1430,6 +1431,7 @@ export default function Game() {
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = 0.4;
+    if (sfxStartRef.current) sfxStartRef.current.volume = 0.7;
   }, []);
 
   const toggleMute = () => {
@@ -1459,6 +1461,10 @@ export default function Game() {
     setPhase("playerSelect");
     if (audioRef.current && audioRef.current.paused) {
       audioRef.current.play().catch(() => {});
+    }
+    if (!muted && sfxStartRef.current) {
+      sfxStartRef.current.currentTime = 0;
+      sfxStartRef.current.play().catch(() => {});
     }
   };
 
@@ -1561,6 +1567,7 @@ export default function Game() {
         preload="auto"
         muted={muted}
       />
+      <audio ref={sfxStartRef} src={asset("start_wav.mp3")} preload="auto" />
       <MusicControl muted={muted} onToggle={toggleMute} />
       {phase === "landing" && <LandingScreen onEnter={enterGame} />}
       {phase === "playerSelect" && (
