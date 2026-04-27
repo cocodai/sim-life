@@ -70,6 +70,14 @@ const OVERTIME_HAPPINESS_PER_HOUR = 3;
 const DEFICIT_HAPPINESS_PENALTY = 12;
 const BROKE_HAPPINESS_PENALTY = 30;
 
+function expenseHappinessPenalty(amount) {
+  if (amount <= 0) return 0;
+  if (amount < 1000) return 1;
+  if (amount < 5000) return 2;
+  if (amount < 20000) return 3;
+  return 5;
+}
+
 const STATUS_TIERS = [
   { id: "start", min: 0, image: asset("start.png"), title: "新 手 上 路" },
   { id: "t30", min: 300_000, image: asset("30.png"), title: "小 有 積 蓄" },
@@ -682,6 +690,14 @@ function simulateMonth(state, upcoming, year) {
     energy: event.energyDelta ?? 0,
     happiness: event.happinessDelta ?? 0,
   });
+
+  // 每筆支出（money < 0）若該項沒有顯式快樂加成/減成，依金額分級扣快樂
+  for (const line of breakdown) {
+    const m = line.money ?? 0;
+    if (m < 0 && (line.happiness ?? 0) === 0) {
+      line.happiness = -expenseHappinessPenalty(Math.abs(m));
+    }
+  }
 
   const monthlyNet = breakdown.reduce((a, b) => a + (b.money ?? 0), 0);
   const deficit = monthlyNet < 0;
