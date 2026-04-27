@@ -758,7 +758,7 @@ function simulateMonth(state, upcoming, year) {
   };
 }
 
-function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitchPlayer }) {
+function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitchPlayer, playLevelup }) {
   const [state, setState] = useState(() => {
     const initEnergy = 80;
     const initSavings = carryOver?.savings ?? 0;
@@ -789,6 +789,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
     if (newIdx > prevIdx) {
       const tier = STATUS_TIERS[newIdx];
       triggerCelebration({ imageSrc: tier.image, title: tier.title, emoji: "💎" });
+      playLevelup?.();
       return newIdx;
     }
     return prevIdx;
@@ -854,6 +855,7 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
     if (state.hasCar) return;
     setState((s) => ({ ...s, hasCar: true, savings: s.savings - CAR_PRICE }));
     triggerCelebration({ imageSrc: asset("x6.jpg"), title: "恭 喜 購 車", emoji: "🚗", multiply: true });
+    playLevelup?.();
   };
 
   const setLeaveDays = (days) => {
@@ -1421,6 +1423,7 @@ export default function Game() {
 
   const audioRef = useRef(null);
   const sfxStartRef = useRef(null);
+  const sfxLevelupRef = useRef(null);
   const [muted, setMuted] = useState(() => {
     try {
       return localStorage.getItem("simlife.muted") === "1";
@@ -1432,7 +1435,16 @@ export default function Game() {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = 0.4;
     if (sfxStartRef.current) sfxStartRef.current.volume = 0.7;
+    if (sfxLevelupRef.current) sfxLevelupRef.current.volume = 0.7;
   }, []);
+
+  const playLevelup = () => {
+    if (muted) return;
+    if (sfxLevelupRef.current) {
+      sfxLevelupRef.current.currentTime = 0;
+      sfxLevelupRef.current.play().catch(() => {});
+    }
+  };
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -1568,6 +1580,7 @@ export default function Game() {
         muted={muted}
       />
       <audio ref={sfxStartRef} src={asset("start_wav.mp3")} preload="auto" />
+      <audio ref={sfxLevelupRef} src={asset("levelup.mp3")} preload="auto" />
       <MusicControl muted={muted} onToggle={toggleMute} />
       {phase === "landing" && <LandingScreen onEnter={enterGame} />}
       {phase === "playerSelect" && (
@@ -1595,6 +1608,7 @@ export default function Game() {
           year={year}
           playerName={currentPlayer?.name}
           onSwitchPlayer={switchPlayer}
+          playLevelup={playLevelup}
         />
       )}
       {phase === "summary" && summary && (
