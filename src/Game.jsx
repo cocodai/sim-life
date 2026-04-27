@@ -758,7 +758,7 @@ function simulateMonth(state, upcoming, year) {
   };
 }
 
-function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitchPlayer, playLevelup }) {
+function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitchPlayer, playLevelup, playAddItem }) {
   const [state, setState] = useState(() => {
     const initEnergy = 80;
     const initSavings = carryOver?.savings ?? 0;
@@ -863,17 +863,17 @@ function GameScreen({ config, onFinishYear, carryOver, year, playerName, onSwitc
   };
 
   const setEntertainmentCount = (id, delta) => {
-    setState((s) => {
-      if (!s.upcoming) return s;
-      const opt = ENTERTAINMENT_OPTIONS.find((o) => o.id === id);
-      if (!opt) return s;
-      const current = s.upcoming.entertainment[id] ?? 0;
-      const next = Math.max(0, Math.min(opt.cap, current + delta));
-      return {
-        ...s,
-        upcoming: { ...s.upcoming, entertainment: { ...s.upcoming.entertainment, [id]: next } },
-      };
-    });
+    if (!state.upcoming) return;
+    const opt = ENTERTAINMENT_OPTIONS.find((o) => o.id === id);
+    if (!opt) return;
+    const current = state.upcoming.entertainment[id] ?? 0;
+    const next = Math.max(0, Math.min(opt.cap, current + delta));
+    if (next === current) return;
+    playAddItem?.();
+    setState((s) => ({
+      ...s,
+      upcoming: { ...s.upcoming, entertainment: { ...s.upcoming.entertainment, [id]: next } },
+    }));
   };
 
   const { month, energy, happiness, savings, lastResult, history, upcoming, annualLeaveRemaining, hasCar, salary } = state;
@@ -1424,6 +1424,7 @@ export default function Game() {
   const audioRef = useRef(null);
   const sfxStartRef = useRef(null);
   const sfxLevelupRef = useRef(null);
+  const sfxAddItemRef = useRef(null);
   const [muted, setMuted] = useState(() => {
     try {
       return localStorage.getItem("simlife.muted") === "1";
@@ -1436,6 +1437,7 @@ export default function Game() {
     if (audioRef.current) audioRef.current.volume = 0.4;
     if (sfxStartRef.current) sfxStartRef.current.volume = 0.7;
     if (sfxLevelupRef.current) sfxLevelupRef.current.volume = 0.7;
+    if (sfxAddItemRef.current) sfxAddItemRef.current.volume = 0.6;
   }, []);
 
   const playLevelup = () => {
@@ -1443,6 +1445,14 @@ export default function Game() {
     if (sfxLevelupRef.current) {
       sfxLevelupRef.current.currentTime = 0;
       sfxLevelupRef.current.play().catch(() => {});
+    }
+  };
+
+  const playAddItem = () => {
+    if (muted) return;
+    if (sfxAddItemRef.current) {
+      sfxAddItemRef.current.currentTime = 0;
+      sfxAddItemRef.current.play().catch(() => {});
     }
   };
 
@@ -1581,6 +1591,7 @@ export default function Game() {
       />
       <audio ref={sfxStartRef} src={asset("start_wav.mp3")} preload="auto" />
       <audio ref={sfxLevelupRef} src={asset("levelup.mp3")} preload="auto" />
+      <audio ref={sfxAddItemRef} src={asset("addItem.mp3")} preload="auto" />
       <MusicControl muted={muted} onToggle={toggleMute} />
       {phase === "landing" && <LandingScreen onEnter={enterGame} />}
       {phase === "playerSelect" && (
@@ -1609,6 +1620,7 @@ export default function Game() {
           playerName={currentPlayer?.name}
           onSwitchPlayer={switchPlayer}
           playLevelup={playLevelup}
+          playAddItem={playAddItem}
         />
       )}
       {phase === "summary" && summary && (
